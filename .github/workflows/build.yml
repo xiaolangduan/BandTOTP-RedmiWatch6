@@ -1,0 +1,44 @@
+name: Build Vela Quick App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install aiot-toolkit
+      run: |
+        npm config set registry https://registry.npmmirror.com
+        npm install -g @aiot-toolkit/cli
+        
+    - name: Verify installation
+      run: |
+        aiot-toolkit --version
+        
+    - name: Build project
+      run: |
+        cd ${{ github.workspace }}
+        aiot-toolkit build
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: BandTOTP-RedmiWatch6
+        path: |
+          ${{ github.workspace }}/dist/*.bin
+          ${{ github.workspace }}/dist/*.rpk
+        retention-days: 90
